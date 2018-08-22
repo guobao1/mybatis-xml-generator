@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="$data.daoName">
+
+    <select id="${data.tableName}-select" resultType="$data.entityName" parameterType="java.util.Map">
+        select * from $data.tableName
+        <where>
+            <include refid="query_filter"/>
+        </where>
+        <if test="start != null">
+            LIMIT #{start},#{limit}
+        </if>
+    </select>
+
+    <delete id="${data.tableName}-delete" parameterType="java.util.Map">
+        delete from $data.tableName where id = #{id};
+    </delete>
+
+    <select id="${data.tableName}-count" resultType="java.lang.Integer" parameterType="java.util.Map">
+        select count(*) from $data.tableName
+        <where>
+            <include refid="query_filter"/>
+        </where>
+    </select>
+
+
+    <insert id="${data.tableName}-insert" parameterType="java.util.Map" useGeneratedKeys="true" keyProperty="id">
+        insert into $data.tableName
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            #foreach($field in $data.fields)
+                <if test="$field.left != null">${field.right},</if>
+            #end
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #foreach($field in $data.fields)
+                <if test="$field.left != null">#{$field.left},</if>
+            #end
+        </trim>
+    </insert>
+
+    <update id="${data.tableName}-update" parameterType="java.util.Map">
+        update $data.tableName
+        <set>
+            #foreach($field in $data.fields)
+                <if test="$field.left != null">$field.right = #{$field.left},</if>
+            #end
+        </set>
+        where id = #{id}
+    </update>
+
+
+    <sql id="query_filter">
+        #foreach($field in $data.fields)
+            <if test="$field.left != null">and $field.right = #{$field.left}</if>
+        #end
+    </sql>
+
+
+</mapper>
